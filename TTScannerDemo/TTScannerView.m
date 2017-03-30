@@ -9,17 +9,24 @@
 #import "TTScannerView.h"
 #import <AVFoundation/AVFoundation.h>
 
+#define TTColor(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
 #define ScreenWidth [UIScreen mainScreen].bounds.size.width
 #define ScreenHeight [UIScreen mainScreen].bounds.size.height
+
+#define Width_Zoom  ScreenWidth/375.0
+#define Height_Zoom ScreenHeight/667.0
+
 
 @interface TTScannerView () <AVCaptureMetadataOutputObjectsDelegate>
 
 @property (nonatomic,strong) AVCaptureSession *session;
 @property (nonatomic,strong) AVCaptureVideoPreviewLayer *priviewLayer;
 
-@property (nonatomic,strong) CALayer *containerLayer;
-@property (nonatomic,strong) UIView *containerView;
+@property (nonatomic,strong) UIImageView *containerView;
+@property (nonatomic,strong) UIImageView *moveLine;
+@property (nonatomic,strong) UIView *topView;
+
 
 
 @end
@@ -27,24 +34,58 @@
 @implementation TTScannerView
 
 //MARK:-懒加载
-- (CALayer *)containerLayer {
-    if (_containerLayer == nil) {
-        _containerLayer = [[CALayer alloc] init];
-    }
-    return _containerLayer;
-}
-
-- (UIView *)containerView {
+- (UIImageView *)containerView {
     if (_containerView == nil) {
-        CGRect outRect = CGRectMake((ScreenWidth-240)/2, (ScreenHeight-240)/2, 240, 240);
-        _containerView = [[UIView alloc] initWithFrame:outRect];
-        _containerView.layer.borderWidth = 0.5;
-        _containerView.layer.borderColor = [UIColor lightGrayColor].CGColor;
+        CGRect containRect = CGRectMake((ScreenWidth-240*Width_Zoom)/2, (ScreenHeight-240*Width_Zoom)/2, 240*Width_Zoom, 240*Width_Zoom);
+        _containerView = [[UIImageView alloc] initWithFrame:containRect];
+        _containerView.image = [UIImage imageNamed:@"code_zone"];
+        
     }
     return _containerView;
 
 }
 
+- (UIImageView *)moveLine {
+    if (_moveLine == nil) {
+        CGRect lineRect = CGRectMake((ScreenWidth-240*Width_Zoom)/2, (ScreenHeight-240*Width_Zoom)/2, 240*Width_Zoom, 6);
+        _moveLine = [[UIImageView alloc] initWithFrame:lineRect];
+        _moveLine.image = [UIImage imageNamed:@"code_scan_line"];
+        
+        CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform.translation.y"];
+        animation.fromValue = @(6);
+        animation.toValue = @(240*Width_Zoom-12);
+        animation.repeatCount = NSUIntegerMax;
+        animation.autoreverses = false;//动画是否倒回移动
+        animation.duration = 2;
+        [_moveLine.layer addAnimation:animation forKey:nil];
+    }
+    return _moveLine;
+}
+
+- (UIView *)topView {
+    if (_topView == nil) {
+        
+        _topView = [[UIView alloc] initWithFrame:CGRectMake((ScreenWidth-240*Width_Zoom)/2, (ScreenHeight-240*Width_Zoom)/2-46-80, 240*Width_Zoom, 46)];
+        _topView.layer.cornerRadius = 5;
+        _topView.layer.masksToBounds = true;
+        _topView.backgroundColor = [UIColor blackColor];
+        
+        UIImageView *codeImage = [[UIImageView alloc] initWithFrame:CGRectMake(14, 10, 25, 24)];
+        codeImage.image = [UIImage imageNamed:@"code"];
+        [_topView addSubview:codeImage];
+        
+        CGFloat tip_X = CGRectGetMaxX(codeImage.frame)+14;
+        CGFloat tip_W = 240*Width_Zoom - CGRectGetMaxX(codeImage.frame) - 14 - 14;
+        UILabel *tipLabel = [[UILabel alloc] initWithFrame:CGRectMake(tip_X, 10, tip_W, 26)];
+        tipLabel.numberOfLines = 0;
+        tipLabel.text = @"Hover over code with camare Avoid\nglare and shadows.";
+        tipLabel.font = [UIFont systemFontOfSize:10];
+        tipLabel.textColor = TTColor(0xffffff);
+        [_topView addSubview:tipLabel];
+    }
+    
+    return _topView;
+}
 
 
 //MARK:-初始化
@@ -54,15 +95,20 @@
     if (self) {
         [self startScanner];
     }
-    
     return self;
 }
 
 //MARK:- 开始扫描
 - (void)startScanner {
     
+    // 添加头部
+    [self addSubview:self.topView];
+    
     // 添加扫描容器
     [self addSubview:self.containerView];
+    
+    // 添加扫描条
+    [self addSubview:self.moveLine];
     
     // session
     self.session = [[AVCaptureSession alloc] init];
@@ -74,9 +120,8 @@
    // input
     NSError *error = nil;
     AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
-    if (!input) {
-        NSString *msg = [NSString stringWithFormat:@"请在手机【设置】-【隐私】-【相机】选项中，允许【%@】访问您的相机",[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleDisplayName"]];
-        
+    if (!input) { //设备不支持相机
+        NSString *msg = @"Your device does not support camera functionality";
         UIAlertView *alertView = [[UIAlertView alloc]initWithTitle:@"提醒"
                                                            message:msg
                                                           delegate:self
@@ -96,7 +141,6 @@
         [self.session addOutput:output];
     }
 
-    // 设置扫描类型 availableMetadataObjectTypes
     output.metadataObjectTypes = @[AVMetadataObjectTypeQRCode,  //条形码
                                         AVMetadataObjectTypeEAN13Code,
                                         AVMetadataObjectTypeEAN8Code,
@@ -105,27 +149,22 @@
     // 设置代理，主线程刷新
     [output setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
 
-    
-    // 获取屏幕的frame
+
     CGRect viewRect = self.frame;
-    // 获取扫描容器的frame
+    
     CGRect containRect = self.containerView.frame;
     CGFloat x = containRect.origin.y / viewRect.size.height;
     CGFloat y = containRect.origin.x / viewRect.size.width;
     CGFloat width = containRect.size.height / viewRect.size.height;
     CGFloat height = containRect.size.width / viewRect.size.width;
-    // 设置扫描的有效区域
+    // 确定扫描区域
     output.rectOfInterest = CGRectMake(x, y, width, height);
-
-    // 创建预览区域
+    
+    // 创建预览图层
     self.priviewLayer = [AVCaptureVideoPreviewLayer layerWithSession:self.session];
     self.priviewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     self.priviewLayer.frame = self.frame;
     [self.layer insertSublayer:self.priviewLayer atIndex:0];
-    
-    // 添加容器涂层
-    self.containerLayer.frame = self.frame;
-    [self.layer addSublayer:self.containerLayer];
     
     // 开始扫描
     [self.session startRunning];
@@ -134,10 +173,8 @@
 
 //MARK:- 停止扫描
 - (void)stopScanner {
-    
     NSLog(@"---stop--");
     [self.session stopRunning];
-    self.session = nil;
     [self.layer removeFromSuperlayer];
 }
 
@@ -154,69 +191,14 @@
         
         NSLog(@"--二维码--%@",object.stringValue);
         
-        
-        AVMetadataMachineReadableCodeObject *obj = (AVMetadataMachineReadableCodeObject *)[self.priviewLayer transformedMetadataObjectForMetadataObject:object];
- 
-        // 清除之前的描边
-        [self clearLayers];
-        // 对扫描到的二维码进行描边
-        [self drawLine:obj];
-        
-//        [self stopScanner];
-        
-    }
-    
-}
-
-//MARK:-利用贝塞尔曲线绘制描边
-- (void)drawLine:(AVMetadataMachineReadableCodeObject *)objc
-{
-    NSArray *array = objc.corners;
-    
-    // 1.创建形状图层, 用于保存绘制的矩形
-    CAShapeLayer *layer = [[CAShapeLayer alloc] init];
-    
-    // 设置线宽
-    layer.lineWidth = 2;
-    // 设置描边颜色
-    layer.strokeColor = [UIColor greenColor].CGColor;
-    layer.fillColor = [UIColor clearColor].CGColor;
-    
-    // 2.创建UIBezierPath, 绘制矩形
-    UIBezierPath *path = [[UIBezierPath alloc] init];
-    CGPoint point = CGPointZero;
-    int index = 0;
-    
-    CFDictionaryRef dict = (__bridge CFDictionaryRef)(array[index++]);
-    // 把点转换为不可变字典
-    // 把字典转换为点，存在point里，成功返回true 其他false
-    CGPointMakeWithDictionaryRepresentation(dict, &point);
-    
-    // 设置起点
-    [path moveToPoint:point];
-    
-    // 2.2连接其它线段
-    for (int i = 1; i<array.count; i++) {
-        CGPointMakeWithDictionaryRepresentation((__bridge CFDictionaryRef)array[i], &point);
-        [path addLineToPoint:point];
-    }
-    // 2.3关闭路径
-    [path closePath];
-    
-    layer.path = path.CGPath;
-    // 3.将用于保存矩形的图层添加到界面上
-    [self.containerLayer addSublayer:layer];
-}
-
-//MARK:-清除描边
-- (void)clearLayers {
-    if (self.containerLayer.sublayers)
-    {
-        for (CALayer *subLayer in self.containerLayer.sublayers)
-        {
-            [subLayer removeFromSuperlayer];
+        if ([self.delegate respondsToSelector:@selector(scanSuccess:data:)]) {
+            [self.delegate scanSuccess:self data:stringValue];
         }
+        
+        [self stopScanner];
+        
     }
+    
 }
 
 

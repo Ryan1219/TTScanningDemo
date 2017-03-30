@@ -14,6 +14,8 @@
 		42560E631E85FE18006A21D0 /* TTScannerDemo.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 42560E611E85FE18006A21D0 /* TTScannerDemo.xcdatamodeld */; };
 		42560E651E85FE18006A21D0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 42560E641E85FE18006A21D0 /* Assets.xcassets */; };
 		42560E681E85FE18006A21D0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 42560E661E85FE18006A21D0 /* LaunchScreen.storyboard */; };
+		42560E711E85FE38006A21D0 /* TTScannerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 42560E701E85FE38006A21D0 /* TTScannerView.m */; };
+		42560E7A1E865C59006A21D0 /* TTScanViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 42560E791E865C59006A21D0 /* TTScanViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +30,10 @@
 		42560E641E85FE18006A21D0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		42560E671E85FE18006A21D0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		42560E691E85FE18006A21D0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		42560E6F1E85FE38006A21D0 /* TTScannerView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TTScannerView.h; sourceTree = "<group>"; };
+		42560E701E85FE38006A21D0 /* TTScannerView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTScannerView.m; sourceTree = "<group>"; };
+		42560E781E865C59006A21D0 /* TTScanViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TTScanViewController.h; sourceTree = "<group>"; };
+		42560E791E865C59006A21D0 /* TTScanViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTScanViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +70,10 @@
 				42560E591E85FE17006A21D0 /* AppDelegate.m */,
 				42560E5B1E85FE17006A21D0 /* ViewController.h */,
 				42560E5C1E85FE18006A21D0 /* ViewController.m */,
+				42560E781E865C59006A21D0 /* TTScanViewController.h */,
+				42560E791E865C59006A21D0 /* TTScanViewController.m */,
+				42560E6F1E85FE38006A21D0 /* TTScannerView.h */,
+				42560E701E85FE38006A21D0 /* TTScannerView.m */,
 				42560E5E1E85FE18006A21D0 /* Main.storyboard */,
 				42560E641E85FE18006A21D0 /* Assets.xcassets */,
 				42560E661E85FE18006A21D0 /* LaunchScreen.storyboard */,
@@ -154,6 +164,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				42560E711E85FE38006A21D0 /* TTScannerView.m in Sources */,
+				42560E7A1E865C59006A21D0 /* TTScanViewController.m in Sources */,
 				42560E5D1E85FE18006A21D0 /* ViewController.m in Sources */,
 				42560E631E85FE18006A21D0 /* TTScannerDemo.xcdatamodeld in Sources */,
 				42560E5A1E85FE17006A21D0 /* AppDelegate.m in Sources */,
@@ -277,8 +289,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEVELOPMENT_TEAM = M6K278EW5S;
 				INFOPLIST_FILE = TTScannerDemo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.tomtop.TTScannerDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -289,8 +304,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				DEVELOPMENT_TEAM = M6K278EW5S;
 				INFOPLIST_FILE = TTScannerDemo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.tomtop.TTScannerDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -316,6 +334,7 @@
 				42560E6E1E85FE18006A21D0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 

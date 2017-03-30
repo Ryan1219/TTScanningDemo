@@ -7,16 +7,43 @@
 //
 
 #import "TTScanViewController.h"
+#import "TTScannerView.h"
+
+
+#define ScreenWidth [UIScreen mainScreen].bounds.size.width
+#define ScreenHeight [UIScreen mainScreen].bounds.size.height
+
 
 @interface TTScanViewController ()
+
+@property (nonatomic,strong) TTScannerView *scannerTool;
 
 @end
 
 @implementation TTScanViewController
 
+
+- (void)viewWillDisappear:(BOOL)animated {
+    
+    [super viewWillDisappear:animated];
+    
+    [self.scannerTool stopScanner];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    
+    
+    self.view.backgroundColor = [UIColor whiteColor];
+    
+    if (self.scannerTool == nil) {
+        CGRect aRect = CGRectMake(0, 0, ScreenWidth, ScreenHeight);
+        self.scannerTool = [[TTScannerView alloc] initWithFrame:aRect];
+        [self.view addSubview:self.scannerTool];
+//        [self.scannerTool startScanner];
+    }
+    
 }
 
 - (void)didReceiveMemoryWarning {

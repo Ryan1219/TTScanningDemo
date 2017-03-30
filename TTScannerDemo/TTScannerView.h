@@ -8,8 +8,15 @@
 
 #import <UIKit/UIKit.h>
 
+@class TTScannerView;
+
+@protocol TTScannerViewDelegate <NSObject>
+- (void)scanSuccess:(TTScannerView *)scanView data:(NSString *)data;
+@end
+
 @interface TTScannerView : UIView
 
+@property (nonatomic,weak) id<TTScannerViewDelegate>delegate;
 //停止扫描
 - (void)stopScanner;
 
